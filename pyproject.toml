@@ -12,3 +12,7 @@ keywords = ["nonebot2", "nonebot-plugin-auto-enter-group"]
 python = ">=3.9"
 nonebot2 = ">=2.0.0"
 nonebot-adapter-onebot = "^2.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
