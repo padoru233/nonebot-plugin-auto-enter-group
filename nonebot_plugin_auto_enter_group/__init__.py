@@ -9,7 +9,6 @@ from nonebot.plugin import PluginMetadata
 from nonebot.rule import Rule
 from .utils import load_data, add_keyword, remove_keyword, record_exit, enable_exit_recording
 
-driver = get_driver()
 
 # 插件元数据
 __plugin_meta__ = PluginMetadata(
