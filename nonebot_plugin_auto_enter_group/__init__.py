@@ -14,6 +14,7 @@ from .utils import load_data, add_keyword, remove_keyword, record_exit, enable_e
 __plugin_meta__ = PluginMetadata(
     name="加群自动审批",
     description="帮助管理员审核入群请求，退群自动记录拒绝入群",
+    type="application",
     usage="""
         查看关键词：群主/管理员可查看入群关键词
         
@@ -23,6 +24,7 @@ __plugin_meta__ = PluginMetadata(
         退群黑名单：启用/禁用退群黑名单
         退群后不允许再次加入
     """.strip(),
+    supported_adapters={ "~onebot.v11" }
 )
 
 # 加载数据

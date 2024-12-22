@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "nonebot-plugin-auto-enter-group"
+version = "0.1.0"
+description = "NoneBot2 加群自动审批"
+authors = ["padoru233 <wr15624916906@gmail.com>"]
+readme = "README.md"
+packages = [{include = "nonebot_plugin_auto_enter_group"}]
+repository = "https://github.com/padoru233/nonebot-plugin-auto-enter-group"
+keywords = ["nonebot2", "nonebot-plugin-auto-enter-group"]
+
+[tool.poetry.dependencies]
+python = ">=3.9"
+nonebot2 = ">=2.0.0"
+nonebot-adapter-onebot = "^2.0.0"
