@@ -5,6 +5,7 @@ description = "NoneBot2 加群自动审批"
 authors = ["padoru233 <wr15624916906@gmail.com>"]
 readme = "README.md"
 packages = [{include = "nonebot_plugin_auto_enter_group"}]
+homepage = "https://github.com/padoru233/nonebot-plugin-auto-enter-group"
 repository = "https://github.com/padoru233/nonebot-plugin-auto-enter-group"
 keywords = ["nonebot2", "nonebot-plugin-auto-enter-group"]
 
