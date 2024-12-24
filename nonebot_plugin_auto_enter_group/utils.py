@@ -1,17 +1,12 @@
 import json
 from pathlib import Path
-from nonebot import logger
+from nonebot import logger, require
 
-# 存储数据的文件路径
-DATA_DIR = Path(__file__).parent / "data"
-DATA_PATH = DATA_DIR / "data.json"
+require("nonebot_plugin_localstore")
+import nonebot_plugin_localstore as store
 
-# 确保数据目录存在
-try:
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    logger.debug("Data directory created or already exists.")
-except Exception as e:
-    logger.error(f"Failed to create data directory: {e}")
+# 使用插件提供的存储路径
+DATA_PATH: Path = store.get_plugin_data_file("data.json")
 
 # 全局变量
 data = None
