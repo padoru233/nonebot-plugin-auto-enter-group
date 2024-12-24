@@ -15,6 +15,7 @@ __plugin_meta__ = PluginMetadata(
     name="加群自动审批",
     description="帮助管理员审核入群请求，退群自动记录拒绝入群",
     type="application",
+    homepage="https://github.com/padoru233/nonebot-plugin-auto-enter-group",
     usage="""
         查看关键词：群主/管理员可查看入群关键词
         
