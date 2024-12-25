@@ -20,6 +20,17 @@ def load_data():
         if DATA_PATH.exists():
             with DATA_PATH.open("r", encoding="utf-8") as f:
                 data = json.load(f)
+            migrated = False
+            for _, group_data in data.get("groups", {}).items():
+                if "keywords" in group_data:
+                    group_data["allowed_keywords"] = group_data.pop("keywords")
+                    migrated = True
+                if "disallowed_keywords" not in group_data:
+                    group_data["disallowed_keywords"] = []
+                    migrated = True
+            if migrated:
+                save_data(data)
+                logger.info("数据已迁移。")
             logger.debug("加载数据成功。")
         else:
             data = {"groups": {}}
