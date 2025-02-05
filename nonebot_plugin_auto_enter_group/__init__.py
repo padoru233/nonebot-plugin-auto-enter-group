@@ -74,7 +74,7 @@ add_allowed_keyword = on_command(
 @add_allowed_keyword.handle()
 async def handle_add_allowed(event: GroupMessageEvent, args: Message = CommandArg()):
     group_id = str(event.group_id)
-    keyword = args.extract_plain_text().strip()
+    keyword = args.extract_plain_text().strip().lower()
     if not keyword:
         await add_allowed_keyword.finish("关键词不能为空，请输入有效的关键词。")
         return
@@ -96,7 +96,7 @@ remove_allowed_keyword = on_command(
 @remove_allowed_keyword.handle()
 async def handle_remove_allowed(event: GroupMessageEvent, args: Message = CommandArg()):
     group_id = str(event.group_id)
-    keyword = args.extract_plain_text().strip()
+    keyword = args.extract_plain_text().strip().lower()
     if not keyword:
         await remove_allowed_keyword.finish("关键词不能为空，请输入有效的关键词。")
         return
@@ -118,7 +118,7 @@ add_disallowed_keyword = on_command(
 @add_disallowed_keyword.handle()
 async def handle_add_disallowed(event: GroupMessageEvent, args: Message = CommandArg()):
     group_id = str(event.group_id)
-    keyword = args.extract_plain_text().strip()
+    keyword = args.extract_plain_text().strip().lower()
     if not keyword:
         await add_disallowed_keyword.finish("关键词不能为空，请输入有效的关键词。")
         return
@@ -140,7 +140,7 @@ remove_disallowed_keyword = on_command(
 @remove_disallowed_keyword.handle()
 async def handle_remove_disallowed(event: GroupMessageEvent, args: Message = CommandArg()):
     group_id = str(event.group_id)
-    keyword = args.extract_plain_text().strip()
+    keyword = args.extract_plain_text().strip().lower()
     if not keyword:
         await remove_disallowed_keyword.finish("关键词不能为空，请输入有效的关键词。")
         return
@@ -215,7 +215,7 @@ async def handle_first_receive(bot: Bot, event: GroupRequestEvent):
         return
     group_id = str(event.group_id)
     user_id = str(event.user_id)
-    comment = event.comment
+    comment = event.comment.lower()
     group_data = data["groups"].get(group_id, {})
     # 检查群组是否开启了退群记录功能
     if group_data.get("exit_records", {}).get("enabled", False):
