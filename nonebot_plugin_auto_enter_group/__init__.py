@@ -163,8 +163,8 @@ enable_exit_cmd = on_command(
 async def handle_enable_exit(event: GroupMessageEvent):
     group_id = str(event.group_id)
     enable_exit_recording(group_id, True)
-    await enable_exit_cmd.finish(f"群 {group_id} 的退群退群黑名单功能已启用。")
-    logger.info(f"群 {group_id} 的退群退群黑名单功能已启用。")
+    await enable_exit_cmd.finish(f"群 {group_id} 的退群黑名单功能已启用。")
+    logger.info(f"群 {group_id} 的退群黑名单功能已启用。")
 
 
 # 禁用退群记录命令
@@ -180,8 +180,8 @@ disable_exit_cmd = on_command(
 async def handle_disable_exit(event: GroupMessageEvent):
     group_id = str(event.group_id)
     enable_exit_recording(group_id, False)
-    await disable_exit_cmd.finish(f"群 {group_id} 的退群退群黑名单功能已禁用。")
-    logger.info(f"群 {group_id} 的退群退群黑名单功能已禁用。")
+    await disable_exit_cmd.finish(f"群 {group_id} 的退群黑名单功能已禁用。")
+    logger.info(f"群 {group_id} 的退群黑名单功能已禁用。")
 
 
 # 处理群成员减少事件
@@ -223,7 +223,8 @@ async def handle_first_receive(bot: Bot, event: GroupRequestEvent):
         return
     group_id = str(event.group_id)
     user_id = str(event.user_id)
-    comment = event.comment.lower()  # type: ignore
+    comment = getattr(event, "comment", "") or ""
+    comment = comment.lower()
     group_data = data["groups"].get(group_id, {})
     # 检查群组是否开启了退群记录功能
     if group_data.get("exit_records", {}).get("enabled", False):
