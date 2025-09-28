@@ -1,3 +1,4 @@
+import asyncio
 from nonebot import logger, on_command, on_notice, on_request
 from nonebot.adapters.onebot.v11 import Bot, GroupDecreaseNoticeEvent, GroupMessageEvent, GroupRequestEvent, Message
 from nonebot.adapters.onebot.v11.permission import GROUP_ADMIN, GROUP_OWNER
@@ -13,6 +14,9 @@ from .utils import (
     record_exit,
     remove_keyword_allowed,
     remove_keyword_disallowed,
+    get_group_blacklist,
+    add_to_blacklist,
+    remove_from_blacklist,
 )
 
 # 插件元数据
@@ -27,6 +31,8 @@ __plugin_meta__ = PluginMetadata(
         添加/删除拒绝关键词 <关键词>：添加/删除自动拒绝入群关键词
         入群答案自动进行关键词模糊匹配
         启用/禁用退群黑名单：启用/禁用本群退群黑名单，启用后退群用户将无法再次加入
+        查看黑名单：查看当前群组黑名单
+        添加/移除黑名单：将批量用户ID添加/移出黑名单
     """,
     supported_adapters={"~onebot.v11"},
 )
@@ -183,6 +189,125 @@ async def handle_disable_exit(event: GroupMessageEvent):
     await disable_exit_cmd.finish(f"群 {group_id} 的退群黑名单功能已禁用。")
     logger.info(f"群 {group_id} 的退群黑名单功能已禁用。")
 
+
+view_blacklist = on_command(
+    "查看黑名单",
+    priority=5,
+    permission=SUPERUSER | GROUP_ADMIN | GROUP_OWNER,
+    block=True,
+)
+
+@view_blacklist.handle()
+async def handle_view_blacklist(event: GroupMessageEvent):
+    group_id = str(event.group_id)
+    blacklist = get_group_blacklist(group_id)
+    if not blacklist:
+        await view_blacklist.finish("当前群组的退群黑名单为空。")
+        return
+
+    # 分段处理黑名单信息
+    ITEMS_PER_PAGE = 30
+    total_items = len(blacklist)
+
+    await view_blacklist.send(f"当前群组的退群黑名单共有 {total_items} 个用户:")
+
+    for i in range(0, total_items, ITEMS_PER_PAGE):
+        page_items = blacklist[i:i + ITEMS_PER_PAGE]
+        msg = "\n".join(f"- {user_id}" for user_id in page_items)
+        await view_blacklist.send(msg)
+
+        # 添加适当的延迟以防止消息发送太快
+        await asyncio.sleep(0.5)
+
+
+add_blacklist = on_command(
+    "添加黑名单",
+    priority=5,
+    permission=SUPERUSER | GROUP_ADMIN | GROUP_OWNER,
+    block=True,
+)
+
+@add_blacklist.handle()
+async def handle_add_blacklist(event: GroupMessageEvent, args: Message = CommandArg()):
+    group_id = str(event.group_id)
+    user_ids = args.extract_plain_text().strip().split()
+
+    if not user_ids:
+        await add_blacklist.finish("请提供要添加的用户QQ号,多个用户用空格分隔。")
+        return
+
+    success_list = []
+    already_list = []
+    fail_list = []
+
+    for user_id in user_ids:
+        # 检查用户是否已在黑名单中
+        blacklist = get_group_blacklist(group_id)
+        if user_id in blacklist:
+            already_list.append(user_id)
+            continue
+
+        # 添加到黑名单
+        if add_to_blacklist(group_id, user_id):
+            success_list.append(user_id)
+        else:
+            fail_list.append(user_id)
+
+    # 生成结果消息
+    msg = []
+    if success_list:
+        msg.append(f"成功添加: {', '.join(success_list)}。")
+    if already_list:
+        msg.append(f"已在黑名单: {', '.join(already_list)}。")
+    if fail_list:
+        msg.append(f"添加失败: {', '.join(fail_list)}。")
+
+    await add_blacklist.finish("\n".join(msg) if msg else "操作完成。")
+
+
+remove_blacklist = on_command(
+    "移除黑名单",
+    priority=5,
+    permission=SUPERUSER | GROUP_ADMIN | GROUP_OWNER,
+    block=True,
+)
+
+@remove_blacklist.handle()
+async def handle_remove_blacklist(event: GroupMessageEvent, args: Message = CommandArg()):
+    group_id = str(event.group_id)
+    user_ids = args.extract_plain_text().strip().split()
+
+    if not user_ids:
+        await remove_blacklist.finish("请提供要移除的用户QQ号,多个用户用空格分隔。")
+        return
+
+    success_list = []
+    not_exist_list = []
+    fail_list = []
+
+    for user_id in user_ids:
+        # 检查用户是否在黑名单中
+        blacklist = get_group_blacklist(group_id)
+        if user_id not in blacklist:
+            not_exist_list.append(user_id)
+            continue
+
+        # 从黑名单中移除
+        if remove_from_blacklist(group_id, user_id):
+            success_list.append(user_id)
+        else:
+            fail_list.append(user_id)
+
+    # 生成结果消息
+    msg = []
+    if success_list:
+        msg.append(f"成功移除: {', '.join(success_list)}。")
+    if not_exist_list:
+        msg.append(f"不在黑名单: {', '.join(not_exist_list)}。")
+    if fail_list:
+        msg.append(f"移除失败: {', '.join(fail_list)}。")
+
+    await remove_blacklist.finish("\n".join(msg) if msg else "操作完成。")
 
 # 处理群成员减少事件
 group_decrease_handler = on_notice(priority=1, block=False)

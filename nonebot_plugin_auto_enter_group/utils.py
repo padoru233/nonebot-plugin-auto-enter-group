@@ -149,3 +149,56 @@ def enable_exit_recording(group_id: str, enabled: bool):
     group_data["exit_records"]["enabled"] = enabled
     save_data(data)
     logger.info(f"群组 {group_id} {'开启' if enabled else '关闭'} 退群黑名单。")
+
+
+def get_group_blacklist(group_id):
+    """获取指定群组的退群黑名单"""
+    global data
+    if not data:
+        load_data()
+    group_data = data["groups"].get(group_id, {})
+    exit_records = group_data.get("exit_records", {"enabled": False, "members": []})
+    return exit_records.get("members", [])
+
+
+def add_to_blacklist(group_id, user_id):
+    """将用户添加到指定群组的退群黑名单"""
+    global data
+    if not data:
+        load_data()
+    try:
+        group_data = data["groups"].setdefault(
+            group_id,
+            {
+                "allowed_keywords": [],
+                "disallowed_keywords": [],
+                "exit_records": {"enabled": False, "members": []}
+            }
+        )
+
+        if user_id not in group_data["exit_records"]["members"]:
+            group_data["exit_records"]["members"].append(user_id)
+            save_data(data)
+            return True
+        return False
+    except:
+        return False
+
+
+def remove_from_blacklist(group_id, user_id):
+    """从指定群组的退群黑名单中移除用户"""
+    global data
+    if not data:
+        load_data()
+    try:
+        group_data = data["groups"].get(group_id)
+        if not group_data:
+            return False
+
+        if user_id in group_data["exit_records"]["members"]:
+            group_data["exit_records"]["members"].remove(user_id)
+            save_data(data)
+            return True
+        return False
+    except:
+        return False
