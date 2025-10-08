@@ -363,7 +363,9 @@ async def handle_first_receive(bot: Bot, event: GroupRequestEvent):
             )
             logger.info(f"用户 {user_id} 被拒绝加入群 {group_id}，原因：已退出过该群。")
             return
+
     disallowed_keywords = group_data.get("disallowed_keywords", [])
+
     if any(keyword in comment for keyword in disallowed_keywords):
         await bot.set_group_add_request(
             flag=flag,
@@ -374,12 +376,29 @@ async def handle_first_receive(bot: Bot, event: GroupRequestEvent):
         logger.info(f"用户 {user_id} 被拒绝加入群 {group_id}，原因：关键词不允许。")
         return
     await group_request_handler.send(f"收到加群请求：\n用户：{user_id} \n验证信息：{comment}")
+
     allowed_answers = group_data.get("allowed_keywords", [])
+
+    if allowed_answers and not comment:
+        await bot.set_group_add_request(
+            flag=flag,
+            sub_type=sub_type,
+            approve=False,
+            reason="本群设置了入群答案，请填写验证信息。",
+        )
+        logger.info(f"用户 {user_id} 被拒绝加入群 {group_id}，原因：申请信息为空且群组设置了关键词。")
+        await group_request_handler.finish("申请信息为空，已自动拒绝。")
+        return
     if not allowed_answers:
         logger.warning(f"用户 {user_id} 尝试加入群 {group_id}，但该群没有设置关键词。")
         await group_request_handler.finish("本群未设置关键词，无法自动处理。")
     if any(keyword in comment for keyword in allowed_answers):
-        await bot.set_group_add_request(flag=flag, sub_type=sub_type, approve=True, reason=" ")
+        await bot.set_group_add_request(
+            flag=flag,
+            sub_type=sub_type,
+            approve=True,
+            reason=" ",
+        )
         logger.info("请求基于关键词匹配已批准。")
         await group_request_handler.finish("判断成功，已自动批准入群。")
     else:
